@@ -45,6 +45,7 @@ tpulse3=t(t0:t0+round(3*pt/dt)-1);
 % tp=1.41;
 tb=dt;
 
+%Calculates background probability on both channels
 [pba3vec, pba5vec, pba3, pba3e, pba5, pba5e, pulsere3, pulsere5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse_3, pulse_5, dt,  tb, tp, counter, nexp);
 
 gatet=t1gate;
