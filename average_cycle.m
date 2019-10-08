@@ -13,6 +13,8 @@ function [av_vec ,counter] = average_cycle(tn, t0, dt, pt, vec)
 %   av_vec: average cycle
 %   counter: number if times the cycle was averaged
 
+vec(end+1)=vec(end);
+vec=[vec(1), vec];
 %Number of bins in one cycle
 t5u=round(pt/dt);
 
@@ -20,20 +22,23 @@ t5u=round(pt/dt);
 tpt=t0+t5u;
 
 %First cycle between t0 and tpt
-av_vec=vec(t0:tpt-1);
+av_vec=vec(t0+1:tpt);
+%length(av_vec);
 
 %Initialize counter
 counter=1;
 
 %Positive times
 for i=1:tn-1
-    av_vec=av_vec+vec(t0+i*t5u:tpt+i*t5u-1);
+    av_vec=av_vec+vec(t0+i*t5u+1:tpt+i*t5u);
+    t0+i*t5u+1;
     counter=counter+1;
 end
 
 %Negative times
 for i=1:tn-1
-    av_vec=av_vec+vec(t0-i*t5u:tpt-i*t5u-1);
+    av_vec=av_vec+vec(t0-i*t5u+1:tpt-i*t5u);
+    tpt-i*t5u-(t0-i*t5u+1);
     counter=counter+1;
 end
 av_vec=av_vec/counter;

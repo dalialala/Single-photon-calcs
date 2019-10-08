@@ -34,7 +34,7 @@ pulse5=pulse5/nexp;
 %Background window start index
 ib1=round(tb/dt);
 %Background window end index
-ib2=round((tb+1.4)/dt);
+ib2=round((tb+1.15)/dt);
 %Bacground sum in window
 pba3=sum(pulse3(ib1:ib2));
 pba5=sum(pulse5(ib1:ib2));
@@ -43,8 +43,8 @@ nbw=ib2-ib1+1;
 %Actual background probability and uncertainty in a bin dt
 pba3e=sqrt(pba3)/sqrt(nexp*counter)/nbw;
 pba5e=sqrt(pba5)/sqrt(nexp*counter)/nbw;
-pba3=pba3/nbw
-pba5=pba5/nbw
+pba3=pba3/nbw;
+pba5=pba5/nbw;
 
 
 pulse_re3=pulse3-pba3;
