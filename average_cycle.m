@@ -36,11 +36,12 @@ for i=1:tn-1
 end
 
 %Negative times
-for i=1:tn-1
+for i=1:tn
     av_vec=av_vec+vec(t0-i*t5u+1:tpt-i*t5u);
     tpt-i*t5u-(t0-i*t5u+1);
     counter=counter+1;
 end
+counter;
 av_vec=av_vec/counter;
 end
 

@@ -1,4 +1,4 @@
-function [back_3, back_5, pba3, pba3e, pba5, pba5e, pulse_re3, pulse_re5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse3, pulse5, dt,  tb, tp, counter, nexp)
+function [back_3, back_5, pba3, pba3e, pba5, pba5e, pulse_re3, pulse_re5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse3, pulse5, dt,  tb, tp, t1gate, counter, nexp)
 %This fucntion calculates the "real" probability of getting a photon click
 %and the probability of getting a background coincidence in a bin "dt" from a vector which
 %contains the single counts over a cycle of duration pt and averaged
@@ -33,8 +33,11 @@ pulse5=pulse5/nexp;
 %%%%Probability of background clicks and uncertainty
 %Background window start index
 ib1=round(tb/dt);
+%ib1=210;
 %Background window end index
-ib2=round((tb+1.15)/dt);
+ib2=round((tb+1.25)/dt);
+ib2=round(tp/dt)+1;
+ib2=53;
 %Bacground sum in window
 pba3=sum(pulse3(ib1:ib2));
 pba5=sum(pulse5(ib1:ib2));
@@ -52,9 +55,9 @@ pulse_re5=pulse5-pba5;
 
 %%%%Probability of photon clicks and uncertainty
 %Pulse window start index
-i1=round(tp/dt);
+i1=round(tp/dt)+1;
 %Pulse window end index
-i2=round((tp+2.25)/dt);
+i2=round((tp+t1gate)/dt)+1;
 %Actual real  probability and uncertainty in a bin dt
 pre3=sum(pulse_re3(i1:i2));
 pre5=sum(pulse_re5(i1:i2));
@@ -74,6 +77,9 @@ back_3(i1:i2)=pba3;
 back_3(il1:il2)=pba3;
 back_5(i1:i2)=pba5;
 back_5(il1:il2)=pba5;
+back_3=pba3*ones(1, length(pulse3));
+back_5=pba5*ones(1, length(pulse3));
+
 
 
 %Probability of background coincidence

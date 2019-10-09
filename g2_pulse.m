@@ -1,4 +1,4 @@
-function[g20,  g20_err, area_par0, area_par] = g2_pulse(tau, pt, numer_g2, winc, file_list, background_flag)
+function[g20,  g20_err, area_par0, area_par] = g2_pulse(tau, pt, tp, vec, numer_g2, winc, file_list, background_flag)
 %This function calculates HOM visibility and if background flag=1 it
 %calculates the background coincidence per bin and subtracts it
 %winc is how wide you want to sum over for coincidences around 0
@@ -26,7 +26,7 @@ t0h=find(t >=(winc), 1);
 npc=t0h-t0l+1;
 
 %Define coincidence vector
-par=double(numer_g2(1,:));
+par=double(vec);
 
 %initialize vectors to find pulse area for |t|>0
 index=5;
@@ -71,40 +71,21 @@ area_par0=sum(par(t0l:t0h));
 
 if background_flag == true
     
-    %Cycles from Setlist
-    pt=round(pt, 3);
-    cycles=floor(0.6e6/pt);
-
+    %tp=1.46;
+    sgate=0;
+    t1gate=winc;
+    [tau_gate, gate_corr, counter] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate);
+    i1=find(tau_gate >=-winc, 1)-1;
+    i2=find(tau_gate >=winc, 1);
     
-    %total files
-    tot_files=length(file_list);
+    bparu=sum(gate_corr(i1:i2));
+    bpar_err=sqrt(bparu/counter);
     
-    %Nunmber of experiments
-    nexp=tot_files*cycles
-    
-    %Single counts from each channel
-    singles3_p=double(fliplr(numer_g2(2,:)));
-    singles5_p=double(fliplr(numer_g2(3,:)));
-    
-    %Get averaged cycle for each channel
-    [av_par3 ,counter] = average_cycle(max_bg, t0, dt, pt,  singles3_p);
-    [av_par5 ,counter] = average_cycle(max_bg, t0, dt, pt,  singles5_p);
-    
-    %Background window start time
-    tb=3.75;
-    
-    %Pulse window start time
-    tp=1.46;
-    
-    %Probability of background coincidence and uncertainty
-    [pbc, pbce, ~, ~, ~, ~] = calc_backg_hom(av_par3, av_par5, dt,  tb, tp, counter, nexp);
-    
-    %Background counts in pulse window  
-    bparu=npc*pbc*nexp;
-    
-    %Uncertainty on background coincidence
-    bpar_err=npc*pbce*nexp;
-    
+    figure
+    semilogy(t, vec)
+    hold
+    semilogy(tau_gate, gate_corr)
+    xlim([-2.5, 2.5])
     
 else
     bparu=0;

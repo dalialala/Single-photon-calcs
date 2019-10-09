@@ -1,4 +1,4 @@
-function [tau_gate, gate_corr] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate)
+function [tau_gate, gate_corr, counter] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate)
 
 %Convert time vector to us
 t=tau*1e6;
@@ -42,31 +42,35 @@ length(tpulse3);
 tb=dt;
 
 %Calculates background probability on both channels
-[pba3vec, pba5vec, pba3, pba3e, pba5, pba5e, pulsere3, pulsere5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse_3, pulse_5, dt,  tb, tp, counter, nexp);
+[pba3vec, pba5vec, pba3, pba3e, pba5, pba5e, pulsere3, pulsere5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse_3, pulse_5, dt,  tb, tp, t1gate, counter, nexp);
 
 gatet=t1gate;
 
-n=length(pulsere3)
+n=length(pulsere3);
 pulse_re3=zeros(1,n);
 pulse_re5=zeros(1,n);
 pba3_vec=zeros(1,n);
 pba5_vec=zeros(1,n);
 
 if sgate == 1
-    itp=find(tpulse>=tp,1);
+    itp=find(tpulse>=tp,1)+1;
     itg=find(tpulse>=(tp+gatet),1);
-    pulse_re3(itp: itg)=pulsere3(itp: itg);
-    pulse_re5(itp: itg)=pulsere5(itp: itg);
-    pba3_vec(itp: itg)=pba3vec(itp: itg);
-    pba5_vec(itp: itg)=pba5vec(itp: itg);
     tpulse(itp)
     tpulse(itg)
+    pulse_re3(itp: itg)=pulsere3(itp: itg);
+    pulse_re5(itp: itg)=pulsere5(itp: itg);
+    pba3_vec(itp: itg)=pba3vec(itp+1: itg+1);
+    pba5_vec(itp: itg)=pba5vec(itp: itg);
+    tpulse(itp);
+    tpulse(itg);
 else
     pulse_re3=pulsere3;
     pulse_re5=pulsere5;
     pba3_vec=pba3vec;
     pba5_vec=pba5vec;
-    gatet=2.0;  
+    %gatet=2.0; 
+    itp=1;
+    itg=n;
 end
 
 
@@ -80,7 +84,7 @@ end
 [ba3ba5] = coinc_tau(tpulse3, [ba3ba5tt, ba3ba5tt, ba3ba5tt]);
 
 tott=((re3ba5+re5ba3+re3re5+ba3ba5)*nexp);
-
+% 
 % figure
 % [T1, Tau]=meshgrid(tpulse3, tpulse);
 % surf(T1, Tau, tott), colorbar, view(2), EdgeColor = 'none';
@@ -112,6 +116,8 @@ pba5_vec=[pba5_vec, pba5_vec, pba5_vec];
 [re3re5_0] = coinc_tau(tpulse3, re3re5t0);
 [ba3ba5_0] = coinc_tau(tpulse3, ba3ba5t0);
 
+
+
 tot=((re3ba5_0+re5ba3_0+re3re5_0+ba3ba5_0)*nexp);
 tot1=tot(2*n+1:end, :);
 tot2=tot(n+1:2*n, :);
@@ -126,15 +132,15 @@ tot=tot1+ tot2;
 
 tot=[tot(:, round(2.5*n):end), tot(:, 1:round(2.5*n)-1)];
 
-[T1, Tau]=meshgrid(tpulse3-5, tpulse);
-figure
-surf(T1, Tau,tot), colorbar, view(2);
-shading interp
+% [T1, Tau]=meshgrid(tpulse3-5, tpulse);
+%  figure
+%  surf(T1, Tau,tot), colorbar, view(2);
+%  shading interp
 
 gate_corr=(sum(tot(itp:itg,:), 1));
 
-figure
 tau_gate=t(find(tau*1e6 >=-7.5, 1):find(tau*1e6 >=7.5, 1)-1);
-semilogy(tau_gate, gate_corr)
+% figure
+ % semilogy(tau_gate, gate_corr)
 end
 

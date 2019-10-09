@@ -44,9 +44,11 @@ t0=find(t>=0,1);
 tn=round(tmax/pt);
 
 %Time that gate starts for each t1
-tb=-3.4941;
+tb=-3.4941+dt;
 %Time that gate finishes for each t1 original 4.14
 te=tb+t1gate;
+
+(te)-(tb)
 
 %For loop runs first on time t1
 for i=tlp:thp
@@ -54,7 +56,7 @@ for i=tlp:thp
     for j=1:tn
         t1i=find(t-((j-1)*(pt)+t1(i)+tb)<=dt/2, 1, 'last');
         ti=t(t1i);
-        t1f=find(t-((j-1)*(pt)+t1(i)+te)<=dt/2, 1, 'last');
+        t1f=find(t-((j-1)*(pt)+t1(i)+te)<=dt/2, 1, 'last')+1;
         t2=t(t1f);
         t1f-t1i+1;
         g3c(i-tlp+1, t1i:t1f)=g3(i,t1i:t1f);
