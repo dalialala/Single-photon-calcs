@@ -1,0 +1,172 @@
+function[vis,  vis_err, par_vec] = hom_vis(tau_2,tau_3, pt, numer_g3_par, numer_g2_par, numer_g3_perp, numer_g2_perp, winc, file_list_par,file_list_perp, background_flag)
+%This function calculates HOM visibility and if background flag=1 it
+%calculates the background coincidence per bin and subtracts it
+%winc is how wide you want to sum over for coincidences around 0
+%win is how wide you want to sum over for background coincidences
+%background_flag is a boolean dictating if you want to subtract background
+
+t=tau_2*1e6;
+t1=tau_3*1e6;
+
+%Check max tau
+max_tau = t(1,end);
+
+%Find t=0
+t0=find(t >=0, 1);
+
+%How many cycles there are for t>0
+max_bg=floor(max_tau/pt);
+
+%bin time
+dt=abs(t(1)-t(2)); 
+    
+%max_bg=1;
+%Find indices for a window (winc) around 0
+t0l=find(t >=(-winc), 1)-1;
+t0h=find(t >=(winc), 1);
+npc=t0h-t0l+1;
+
+t1gate=winc;
+
+HOM=1;
+%Define coincidence vector
+tp=4.5785-t1gate;
+%tp=4.6062-t1gate;
+[corr_par, single, ~, par] = counts(tau_2, tau_3, numer_g3_par, tp, t1gate, pt ,HOM);
+[corr_perp, ~, ~, perp] = counts(tau_2, tau_3, numer_g3_perp, tp, t1gate, pt ,HOM);
+
+% figure
+% semilogy(t1,single)
+
+%initialize vectors to find pulse area for |t|>0
+index=5;
+par_vec=zeros(max_bg-index+1, 2);
+perp_vec=zeros(max_bg-index+1, 2);
+
+for i=index:max_bg
+        %find relevant time indices for each pulse window
+        tpph=find(t >=((i-1)*pt+winc), 1);
+        tppl=find(t >=((i-1)*pt-winc), 1);
+        tpnl=find(t >=(-(i-1)*pt-winc), 1)-1;
+        tpnh=find(t >=(-(i-1)*pt+winc), 1)-1;
+        %fill vectors
+        par_vec(i-index+1, 1)=sum(par(tppl:tpph));
+        par_vec(i-index+1, 2)=sum(par(tpnl:tpnh));
+        perp_vec(i-index+1, 1)=sum(perp(tppl:tpph));
+        perp_vec(i-index+1, 2)=sum(perp(tpnl:tpnh));        
+end
+
+%Calculate mean area for pulses with t>pt above certain threshold
+th=0.975;
+count_par=0;
+area_par=0;
+count_perp=0;
+area_perp=0;
+for i=1:length(par_vec)
+    if par_vec(i,1)>=max(max(par_vec))*th
+        area_par=area_par+par_vec(i,1);
+        par_vec(i,1);
+        count_par=count_par+1; 
+    end
+    if par_vec(i,2)>=max(max(par_vec))*th
+        area_par=area_par+par_vec(i,2);
+        par_vec(i,2);
+        count_par=count_par+1; 
+    end   
+end
+
+for i=1:length(perp_vec)
+    if perp_vec(i,1)>=max(max(perp_vec))*th
+        area_perp=area_perp+perp_vec(i,1);
+        perp_vec(i,1);
+        count_perp=count_perp+1; 
+    end
+    if perp_vec(i,2)>=max(max(perp_vec))*th
+        area_perp=area_perp+perp_vec(i,2);
+        perp_vec(i,2);
+        count_perp=count_perp+1; 
+    end   
+end
+
+
+%normalized area for parallel pulses
+area_par=area_par/count_par;
+
+%normalized area for perpendicular pulses
+area_perp=area_perp/count_perp;
+
+area_par0=sum(par(t0l:t0h));
+
+area_perp0=sum(perp(t0l:t0h));
+
+
+if background_flag == true
+    
+    t1gate=winc;
+    tp=4.3978-t1gate;
+    %tp=4.0827+dt-t1gate;
+    sgate=1;
+    [tau_gate, gate_par, counter_par, pbce_par] = back_profile(tau_2, numer_g2_par, file_list_par, pt, tp, t1gate, sgate, HOM);
+    [tau_gate, gate_perp, counter_perp, pbce_perp] = back_profile(tau_2, numer_g2_perp, file_list_perp, pt, tp, t1gate, sgate, HOM);
+
+    i1=find(tau_gate >=-winc, 1)-1;
+    i2=find(tau_gate >=winc, 1);
+    
+    bparu=sum(gate_par(i1:i2));
+    bpar_err=sqrt(bparu/counter_par);
+    
+    bperpu=sum(gate_perp(i1:i2));
+    bperp_err=sqrt(bperpu/counter_perp);
+    
+    mpar=max(par);
+    mpar2=max(gate_par);
+    mperp=max(perp);
+    
+    figure
+    semilogy(tau_gate, gate_par/mpar2)
+    hold
+    semilogy(t, perp/mperp)
+    semilogy(t, par/mpar)
+    xlim([-5, 5])
+    ylim([5e-4, 1])
+    
+    figure
+    plot(tau_gate, gate_par/mpar2)
+    hold
+    errorbar(t, perp/mperp, sqrt(perp)/mperp,'CapSize',0)
+    errorbar(t, par/mpar, sqrt(par)/mpar, 'CapSize',0)
+    ylim([5e-4, 1])
+    xlim([-5, 5])
+    set(gca,'yscale','log')
+   
+    
+else
+    bparu=0;
+    bpar_err=0;
+    bperpu=0;
+    bperp_err=0;
+end
+
+
+%Calculate visibility
+num1=area_par0-bparu;
+den1=area_par-bparu;
+num2=area_perp0-bperpu;
+den2=area_perp-bperpu;
+ratio1=num1/den1;
+ratio2=num2/den2;
+
+vis=1-ratio1/ratio2;
+
+%Calculate error in visibility
+n1=sqrt(area_par0+bpar_err^2);
+%d1=sqrt(area_par+bpar_err^2);
+d1=sqrt(area_par+bpar_err^2);
+n2=sqrt(area_perp0+bperp_err^2);
+%d2=sqrt(area_perp+bperp_err^2);
+d2=sqrt(area_perp+bperp_err^2);
+r1=ratio1*sqrt((n1/num1)^2+(d1/den1)^2);
+r2=ratio2*sqrt((n2/num2)^2+(d2/den2)^2);
+vis_err=(ratio1/ratio2)*sqrt((r1/ratio1)^2+(r2/ratio2)^2);
+
+end

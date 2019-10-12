@@ -43,21 +43,18 @@ if HOM == true
 else
     ib1=round(tb/dt);
     ib1=210;
-    %ib1=35
+    
 end
 
 %ib1=210;
 %Background window end index
 if HOM == true
-    if dt<0.05
-        ib2=84;
-    else
-        ib2=34;
-    end
+    ib2=84;
+    ib2=34;
+    
 else
     ib2=40;
     ib2=length(pulse3);
-    %ib2=100
     
 end
 

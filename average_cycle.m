@@ -1,6 +1,6 @@
 function [av_vec ,counter] = average_cycle(tn, t0, dt, pt, vec)
 %This function finds the average pulse shape for a cycle of duration 
-%pt with 2*tn-1 cycles from a vector "vec"
+%pt with 2*tn cycles from a vector "vec"
 
 %Input Variables
 %   tn: pprox half number of cycles in time vector

@@ -1,4 +1,4 @@
-function [tau_gate, gate_corr, counter] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate)
+function [tau_gate, pulse_re3t, pulse_re5t, pba3_vec, pba5_vec, gate_corr, counter, pbce] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate, HOM)
 
 %Convert time vector to us
 t=tau*1e6;
@@ -22,27 +22,35 @@ cycles=0.6e6/pt;
 nexp=tot_files*cycles;
 
 %Repetition times for positive times
-tn=round(tend/pt);
+tn=round(tend/pt)-1;
 
 singles_3 = double((numer_g2(2,:)));
+
 singles_5 = double((numer_g2(3,:)));
 
-
-[pulse_3 ,counter] = average_cycle(tn, t0, dt, pt, singles_3);
-[pulse_5 ,counter] = average_cycle(tn, t0, dt, pt, singles_5);
+%For HOM meas
+if HOM == true
+    t0a=t0+10;
+else
+    t0a=t0;
+end
+    
+[pulse_3 ,counter] = average_cycle(tn, t0a, dt, pt, singles_3);
+[pulse_5 ,counter] = average_cycle(tn, t0a, dt, pt, singles_5);
 
 
 t1 = find(t>=pt,1)-1;
 tpulse=t(t0+1:t1);
 length(tpulse);
-t3 = find(t>=3*pt,1)-1;
+t3 = find(t>=3*pt,1);
 tpulse3=t(t0+1:t3);
-length(tpulse3);
+length(tpulse3)
+length(pulse_3)
 
 tb=dt;
 
 %Calculates background probability on both channels
-[pba3vec, pba5vec, pba3, pba3e, pba5, pba5e, pulsere3, pulsere5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse_3, pulse_5, dt,  tb, tp, t1gate, counter, nexp);
+[pba3vec, pba5vec, pba3, pba3e, pba5, pba5e, pbce, pulsere3, pulsere5, pre3, pre3e, pre5, pre5e] = calc_backg(pulse_3, pulse_5, dt,  tb, tp, t1gate, counter, nexp, HOM);
 
 gatet=t1gate;
 
@@ -51,18 +59,22 @@ pulse_re3=zeros(1,n);
 pulse_re5=zeros(1,n);
 pba3_vec=zeros(1,n);
 pba5_vec=zeros(1,n);
+% % 
+% figure
+% semilogy(tpulse, pulse_3)
+% pulse_3(166);
 
 if sgate == 1
-    itp=find(tpulse>=tp,1)+1;
-    itg=find(tpulse>=(tp+gatet),1);
-    tpulse(itp)
-    tpulse(itg)
+    itp=find(tpulse>=tp,1)-1;
+    itg=find(tpulse>=(tp+gatet),1)-1;
+    tpulse(itp);
+    tpulse(itg);
+    tpulse(itg)-tpulse(itp);
     pulse_re3(itp: itg)=pulsere3(itp: itg);
     pulse_re5(itp: itg)=pulsere5(itp: itg);
     pba3_vec(itp: itg)=pba3vec(itp+1: itg+1);
     pba5_vec(itp: itg)=pba5vec(itp: itg);
-    tpulse(itp);
-    tpulse(itg);
+
 else
     pulse_re3=pulsere3;
     pulse_re5=pulsere5;
@@ -73,9 +85,14 @@ else
     itg=n;
 end
 
+% figure
+% semilogy(tpulse, pulse_re3)
+% hold
+% semilogy(tpulse, pba3_vec)
+% semilogy(tpulse, pulse_re5)
+% semilogy(tpulse, pba5_vec)
 
-%Background coincidences in t1 t2 space
-
+%Background and real coincidences in t1 t2 space
 [re3ba5tt, re5ba3tt, re3re5tt, ba3ba5tt ] = coinc_tt(pulse_re3, pulse_re5, pba3_vec, pba5_vec);
 
 [re3ba5] = coinc_tau(tpulse3, [re3ba5tt, re3ba5tt, re3ba5tt]);
@@ -122,24 +139,25 @@ tot=((re3ba5_0+re5ba3_0+re3re5_0+ba3ba5_0)*nexp);
 tot1=tot(2*n+1:end, :);
 tot2=tot(n+1:2*n, :);
  
-ix1=round(0.72/dt);
+ix1=round(0.5/dt);
 ix2=round(1/dt);
 iy1=round(7/dt);
-iy2=round(6.1/dt);
+iy2=round(5/dt);
 tot2(ix1:end, iy1:end)=0;
 tot2(1:ix2, iy2:end)=0;
 tot=tot1+ tot2;
 
 tot=[tot(:, round(2.5*n):end), tot(:, 1:round(2.5*n)-1)];
 
-% [T1, Tau]=meshgrid(tpulse3-5, tpulse);
+% [T1, Tau]=meshgrid(tpulse3, tpulse);
 %  figure
 %  surf(T1, Tau,tot), colorbar, view(2);
 %  shading interp
 
 gate_corr=(sum(tot(itp:itg,:), 1));
-
-tau_gate=t(find(tau*1e6 >=-7.5, 1):find(tau*1e6 >=7.5, 1)-1);
+length(gate_corr);
+tau_gate=t(find(t >=-round(1.5*pt/dt)*dt, 1)+1:find(t >=round(1.5*pt/dt)*dt, 1)-1);
+length(tau_gate);
 % figure
  % semilogy(tau_gate, gate_corr)
 end

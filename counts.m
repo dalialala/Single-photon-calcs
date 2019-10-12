@@ -1,4 +1,4 @@
-function [corr, single, t1gate_vec, t1tgate_vec] = counts(tau_2, tau_3, numer_g3, tp, t1gate, pt)
+function [corr, single, t1gate_vec, t1tgate_vec] = counts(tau_2, tau_3, numer_g3, tp, t1gate, pt ,HOM)
 %Convert g3 data to double
 g3=squeeze(double(numer_g3));
 
@@ -41,22 +41,36 @@ tmin = t(1);
 tmax = t(end);
 t0=find(t>=0,1);
 
-tn=round(tmax/pt);
+if pt<5
+    tn=round(tmax/pt)-1;
+else
+    tn=round(tmax/pt);
+end
 
 %Time that gate starts for each t1
-tb=-3.4941+dt;
+
+if HOM == true
+    if dt < 0.05
+        tb=-4.5785+dt;
+    else
+        tb=-4.5538+dt
+    end
+else
+    tb=-3.4941+dt;
+end
+
 %Time that gate finishes for each t1 original 4.14
 te=tb+t1gate;
 
-(te)-(tb)
+(te)-(tb);
 
 %For loop runs first on time t1
 for i=tlp:thp
     %Second for loop runs for gating in tau
     for j=1:tn
-        t1i=find(t-((j-1)*(pt)+t1(i)+tb)<=dt/2, 1, 'last');
+        t1i=find(t-((j-1)*(pt)+t1(i)+tb)<=dt/2, 1, 'last')-1;
         ti=t(t1i);
-        t1f=find(t-((j-1)*(pt)+t1(i)+te)<=dt/2, 1, 'last')+1;
+        t1f=find(t-((j-1)*(pt)+t1(i)+te)<=dt/2, 1, 'last');
         t2=t(t1f);
         t1f-t1i+1;
         g3c(i-tlp+1, t1i:t1f)=g3(i,t1i:t1f);
@@ -69,7 +83,7 @@ end
 %    for j=1:2
 for i=tlp:thp
     for j=1:tn-1
-        t1i=find(t-(-j*pt+t1(i)+tb)<=dt/2, 1, 'last');
+        t1i=find(t-(-j*pt+t1(i)+tb)<=dt/2, 1, 'last')-1;
         ti=t(t1i);
         t1f=find(t-(-j*pt+t1(i)+te)<=dt/2, 1, 'last');
         t2=t(t1f);

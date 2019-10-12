@@ -1,4 +1,4 @@
-function[g20,  g20_err, area_par0, area_par] = g2_pulse(tau, pt, tp, vec, numer_g2, winc, file_list, background_flag)
+function[g20,  g20_err, area_par, bparu] = g2_pulse(tau, pt, tp, vec, numer_g2, winc, file_list, background_flag)
 %This function calculates HOM visibility and if background flag=1 it
 %calculates the background coincidence per bin and subtracts it
 %winc is how wide you want to sum over for coincidences around 0
@@ -29,7 +29,7 @@ npc=t0h-t0l+1;
 par=double(vec);
 
 %initialize vectors to find pulse area for |t|>0
-index=5;
+index=50;
 p_vec=zeros(max_bg-index+1, 2);
 
 for i=index:max_bg
@@ -44,47 +44,30 @@ for i=index:max_bg
         
 end
 
-npar=1;
-
-%Calculate mean area for pulses with t>pt above certain threshold
-th=0.975;
-count_p=0;
-area_p=0;
-for i=1:length(p_vec)
-    if p_vec(i,1)>=max(max(p_vec))*th
-        area_p=area_p+p_vec(i,1);
-        p_vec(i,1);
-        count_p=count_p+1; 
-    end
-    if p_vec(i,2)>=max(max(p_vec))*th
-        area_p=area_p+p_vec(i,2);
-        p_vec(i,2);
-        count_p=count_p+1; 
-    end
-   
-end
-
 %normalized area for parallel pulses
-area_par=area_p/count_p;
+area_par=mean(mean(p_vec));
+n=2*length(p_vec);
 
 area_par0=sum(par(t0l:t0h));
 
 if background_flag == true
     
     %tp=1.46;
-    sgate=0;
+    sgate=1;
     t1gate=winc;
-    [tau_gate, gate_corr, counter] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate);
+    HOM=0;
+    [tau_gate, gate_corr, counter, pbce] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate, HOM);
     i1=find(tau_gate >=-winc, 1)-1;
     i2=find(tau_gate >=winc, 1);
     
     bparu=sum(gate_corr(i1:i2));
-    bpar_err=sqrt(bparu/counter);
+    %bpar_err=sqrt(bparu/counter);
+    bpar_err=pbce*(i2-i1+1)
     
     figure
-    semilogy(t, vec)
+    semilogy(tau_gate, round(gate_corr))
     hold
-    semilogy(tau_gate, gate_corr)
+    semilogy(t, vec)
     xlim([-2.5, 2.5])
     
 else
@@ -104,8 +87,8 @@ g20=ratio1;
 
 %Calculate error in g20
 n1=sqrt(area_par0+bpar_err^2);
-d1=sqrt(area_par/npar+bpar_err^2);
+d1=sqrt(area_par/n+bpar_err^2);
 r1=ratio1*sqrt((n1/num1)^2+(d1/den1)^2);
-g20_err=r1;
+g20_err=abs(r1);
 
 end
