@@ -1,4 +1,4 @@
-function[g20,  g20_err, area_par0, area_par] = g2_pulse(tau, pt, tp, vec, numer_g2, winc, file_list, background_flag)
+function[g20,  g20_err, tau_gate, gate_corr] = g2_pulse(tau, pt, tp, vec, numer_g2, winc, file_list, background_flag)
 %This function calculates HOM visibility and if background flag=1 it
 %calculates the background coincidence per bin and subtracts it
 %winc is how wide you want to sum over for coincidences around 0
@@ -56,28 +56,27 @@ if background_flag == true
     sgate=1;
     t1gate=winc;
     HOM=0;
-%     [tau_gate, gate_corr, counter, pbce] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate, HOM);
-%     i1=find(tau_gate <=-winc, 1, 'last');
-%     i2=find(tau_gate <=winc, 1, 'last');
-%     
-%     bparu=sum(gate_corr(i1:i2));
-%     bpar_err=pbce*(i2-i1+1)
-
-    [tau_gate, gate_corr, bparu, bpar_err] = int_sc(t, numer_g2, pt, tp,winc, file_list);
-
+    [tau_gate, gate_corr, counter, pbce] = back_profile(tau, numer_g2, file_list, pt, tp, t1gate, sgate, HOM);
+    i1=find(tau_gate <=-winc, 1, 'last');
+    i2=find(tau_gate <=winc, 1, 'last');
+    
+    bparu=sum(gate_corr(i1:i2));
+    %bpar_err=sqrt(bparu/counter);
+    bpar_err=pbce*(i2-i1+1)
     
     figure
     semilogy(t, vec)
     hold
     semilogy(tau_gate, (gate_corr))
-    xlim([-7, 7])
-    ylim([20, 50000])
+    xlim([-1.5, 1.5])
+    ylim([1, 150])
     
 else
     bparu=0;
+   
     bpar_err=0;
     tau_gate=t;
-    gate_corr=vec(t0l:t0h);
+    back=vec(tol:t0h)
 end
 
 

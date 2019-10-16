@@ -35,17 +35,17 @@ else
     t0a=t0;
 end
     
-[pulse_3 ,counter] = average_cycle(tn, t0a, dt, pt, singles_3);
-[pulse_5 ,counter] = average_cycle(tn, t0a, dt, pt, singles_5);
+[pulse_3 ,counter] = average_cycle(t, tn, t0a, dt, pt, singles_3);
+[pulse_5 ,counter] = average_cycle(t, tn, t0a, dt, pt, singles_5);
 
 
-t1 = find(t>=pt,1)-1;
-tpulse=t(t0+1:t1);
+t1 = find(t<=pt,1, 'last')-1;
+tpulse=t(t0:t1);
 length(tpulse);
-t3 = find(t>=3*pt,1)-1;
-tpulse3=t(t0+1:t3);
-length(tpulse3)
-length(pulse_3)
+t3 = find(t<=3*pt, 1, 'last')-1;
+tpulse3=t(t0:t3);
+% length(tpulse3)
+% length(pulse_3)
 
 tb=dt;
 
@@ -59,20 +59,19 @@ pulse_re3=zeros(1,n);
 pulse_re5=zeros(1,n);
 pba3_vec=zeros(1,n);
 pba5_vec=zeros(1,n);
-% 
+% % 
 % figure
 % semilogy(tpulse, pulse_3)
-% pulse_3(166);
 
 if sgate == 1
-    itp=find(tpulse>=tp,1)-1;
-    itg=find(tpulse>=(tp+gatet),1)-1;
-    tpulse(itp);
-    tpulse(itg);
-    tpulse(itg)-tpulse(itp);
+    itp=find(tpulse<=tp,1, 'last')+1;
+    itg=find(tpulse<=(tp+gatet),1, 'last');
+    tpulse(itp)
+    tpulse(itg)
+    tpulse(itg)-tpulse(itp)
     pulse_re3(itp: itg)=pulsere3(itp: itg);
     pulse_re5(itp: itg)=pulsere5(itp: itg);
-    pba3_vec(itp: itg)=pba3vec(itp+1: itg+1);
+    pba3_vec(itp: itg)=pba3vec(itp: itg);
     pba5_vec(itp: itg)=pba5vec(itp: itg);
 
 else
@@ -81,6 +80,8 @@ else
     pba3_vec=pba3vec;
     pba5_vec=pba5vec;
     %gatet=2.0; 
+    tp=1.4458;
+    gatet=2.2089;
     itp=1;
     itg=n;
 end
@@ -93,14 +94,14 @@ end
 % semilogy(tpulse, pba5_vec)
 
 %Background and real coincidences in t1 t2 space
-[re3ba5tt, re5ba3tt, re3re5tt, ba3ba5tt ] = coinc_tt(pulse_re3, pulse_re5, pba3_vec, pba5_vec);
-
-[re3ba5] = coinc_tau(tpulse3, [re3ba5tt, re3ba5tt, re3ba5tt]);
-[re5ba3] = coinc_tau(tpulse3, [re5ba3tt, re5ba3tt, re5ba3tt]);
-[re3re5] = coinc_tau(tpulse3, [re3re5tt, re3re5tt, re3re5tt] );
-[ba3ba5] = coinc_tau(tpulse3, [ba3ba5tt, ba3ba5tt, ba3ba5tt]);
-
-tott=((re3ba5+re5ba3+re3re5+ba3ba5)*nexp);
+% [re3ba5tt, re5ba3tt, re3re5tt, ba3ba5tt ] = coinc_tt(pulse_re3, pulse_re5, pba3_vec, pba5_vec);
+% 
+% [re3ba5] = coinc_tau(tpulse3, [re3ba5tt, re3ba5tt, re3ba5tt]);
+% [re5ba3] = coinc_tau(tpulse3, [re5ba3tt, re5ba3tt, re5ba3tt]);
+% [re3re5] = coinc_tau(tpulse3, [re3re5tt, re3re5tt, re3re5tt] );
+% [ba3ba5] = coinc_tau(tpulse3, [ba3ba5tt, ba3ba5tt, ba3ba5tt]);
+% 
+% tott=((re3ba5+re5ba3+re3re5+ba3ba5)*nexp);
 % 
 % figure
 % [T1, Tau]=meshgrid(tpulse3, tpulse);
@@ -113,8 +114,11 @@ tott=((re3ba5+re5ba3+re3re5+ba3ba5)*nexp);
 pulse_re30=pulse_re3;
 pulse_re50=pulse_re5;
 
-itpt=find(tpulse>=tp,1);
-itgt=find(tpulse>=(tp+gatet),1);
+figure
+semilogy(tpulse, pulse_re3)
+
+itpt=find(tpulse<=tp,1, 'last');
+itgt=find(tpulse<=(tp+gatet),1, 'last');
 
 pulse_re30(itpt:itgt)=0;
 pulse_re50(itpt:itgt)=0;
@@ -124,6 +128,13 @@ pulse_re3t=[pulse_re3, pulse_re30, pulse_re3];
 
 pba3_vec=[pba3_vec, pba3_vec, pba3_vec];
 pba5_vec=[pba5_vec, pba5_vec, pba5_vec];
+
+% figure
+% semilogy(tpulse3, pulse_re3t)
+% hold
+% semilogy(tpulse3, pulse_re5t)
+% semilogy(tpulse3, pba3_vec)
+% semilogy(tpulse3, pba5_vec)
 
 
 [re3ba5t0, re5ba3t0, re3re5t0, ba3ba5t0] = coinc_tt(pulse_re3t, pulse_re5t, pba3_vec, pba5_vec);
@@ -139,26 +150,41 @@ tot=((re3ba5_0+re5ba3_0+re3re5_0+ba3ba5_0)*nexp);
 tot1=tot(2*n+1:end, :);
 tot2=tot(n+1:2*n, :);
  
-ix1=round(0.75/dt);
-ix2=round(0.75/dt);
+ix1=round(0.5/dt);
+ix2=round(1/dt);
 iy1=round(7/dt);
-iy2=round(6.1/dt);
+iy2=round(5/dt);
 tot2(ix1:end, iy1:end)=0;
 tot2(1:ix2, iy2:end)=0;
 tot=tot1+ tot2;
 
 tot=[tot(:, round(2.5*n):end), tot(:, 1:round(2.5*n)-1)];
 
-[T1, Tau]=meshgrid(tpulse3-5, tpulse);
- figure
- surf(T1, Tau,tot2), colorbar, view(2);
- shading interp
+tot(1:itp-1,:)=0;
+tot(itg+1:end, :)=0;
+tau_gate=t(t0-floor(1.5*n)-2:t0+floor(1.5*n)-2);
 
-gate_corr=(sum(tot(itp:itg,:), 1));
-length(gate_corr)
-tau_gate=t(find(t >=-round(1.5*pt/dt)*dt, 1)+1:find(t >=round(1.5*pt/dt)*dt, 1)-1);
-length(tau_gate)
-% figure
- % semilogy(tau_gate, gate_corr)
+
+ [T1, Tau]=meshgrid(tau_gate, tpulse);
+%  figure
+%  surf(T1, Tau,tot1), colorbar, view(2);
+%  shading interp
+%  
+%   figure
+%  surf(T1, Tau,tot2), colorbar, view(2);
+%  shading interp
+
+gate_corr=(sum(tot(1:end,:), 1));
+length(gate_corr);
+length(tau_gate);
+
+ figure
+ surf(T1, Tau,tot), view(2);
+ shading interp
+ xlim([4, 7])
+ ylim([1.5, 4.0])
+ caxis([0 30])
+ pbaspect([1 1 1])
+ 
 end
 

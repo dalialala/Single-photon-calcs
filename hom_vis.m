@@ -33,7 +33,7 @@ HOM=1;
 if dt< 0.05
     tp=4.5785-t1gate;
 else
-    tp=4.6585-t1gate;
+    tp=4.6062-t1gate;
 end
 [corr_par, single, ~, par] = counts(tau_2, tau_3, numer_g3_par, tp, t1gate, pt ,HOM);
 [corr_perp, ~, ~, perp] = counts(tau_2, tau_3, numer_g3_perp, tp, t1gate, pt ,HOM);
@@ -80,7 +80,7 @@ if background_flag == true
     if dt< 0.05
         tp=4.3978-t1gate;
     else
-        tp=4.1874-t1gate;
+        tp=4.0304-t1gate;
     end
     sgate=1;
     [tau_gate, gate_par, counter_par, pbce_par] = back_profile(tau_2, numer_g2_par, file_list_par, pt, tp, t1gate, sgate, HOM);
