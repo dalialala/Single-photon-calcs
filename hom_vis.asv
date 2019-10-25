@@ -1,4 +1,4 @@
-function[vis,  vis_err, par, perp, tau_gate, gate_par, mpar, mperp] = hom_vis(tau_2,tau_3, pt, numer_g3_par, numer_g2_par, numer_g3_perp, numer_g2_perp, winc, file_list_par,file_list_perp, background_flag)
+function[vis,  vis_err, tau_gate, gate_par] = hom_vis(tau_2,tau_3, pt, numer_g3_par, numer_g2_par, numer_g3_perp, numer_g2_perp, winc, file_list_par,file_list_perp, background_flag)
 %This function calculates HOM visibility and if background flag=1 it
 %calculates the background coincidence per bin and subtracts it
 %winc is how wide you want to sum over for coincidences around 0
@@ -33,7 +33,7 @@ HOM=1;
 if dt< 0.05
     tp=4.5785-t1gate;
 else
-    tp=4.5538-t1gate;
+    tp=4.6062-t1gate;
 end
 [corr_par, single, ~, par] = counts(tau_2, tau_3, numer_g3_par, tp, t1gate, pt ,HOM);
 [corr_perp, ~, ~, perp] = counts(tau_2, tau_3, numer_g3_perp, tp, t1gate, pt ,HOM);
@@ -82,7 +82,6 @@ if background_flag == true
         tp=4.5785-t1gate;
     else
         tp=4.0304-t1gate;
-        tp=4.5538-t1gate;
     end
 %     sgate=1;
 %     [tau_gate, gate_par, counter_par, pbce_par] = back_profile(tau_2, numer_g2_par, file_list_par, pt, tp, t1gate, sgate, HOM);
@@ -112,7 +111,16 @@ if background_flag == true
     semilogy(t, par/mpar)
     xlim([-5, 5])
     ylim([5e-4, 1])
-      
+    
+    figure
+    plot(tau_gate, gate_par/mpar)
+    hold
+    errorbar(t, perp/mperp, sqrt(perp)/mperp,'CapSize',0)
+    errorbar(t, par/mpar, sqrt(par)/mpar, 'CapSize',0)
+    ylim([5e-4, 1])
+    xlim([-5, 5])
+    set(gca,'yscale','log')
+   
     
 else
     bparu=0;
@@ -121,8 +129,7 @@ else
     bperp_err=0;
     tau_gate=0;
     gate_par=0;
-    mpar=1;
-    mperp=1;
+    gate_perp=0;
 end
 
 

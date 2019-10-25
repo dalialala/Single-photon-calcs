@@ -1,4 +1,4 @@
-binv=[60,  70];
+binv=[60,  28];
 vec=[];
 err=[];
 wind=[];
@@ -6,7 +6,7 @@ ts=[];
 for i=2:2
 dt=(tau(2)-tau(1))*1e6;
 pt=round(5/dt)*dt;
-tp=(tau_3(174)*1e6-binv(i)*dt);
+tp=(tau_3(71)*1e6-binv(i)*dt);
 winc=binv(i)*dt;
 t1gate=winc;
 background_flag=1;

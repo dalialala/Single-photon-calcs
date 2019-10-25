@@ -63,7 +63,7 @@ if background_flag == true
 %     bparu=sum(gate_corr(i1:i2));
 %     bpar_err=pbce*(i2-i1+1)
 
-    [tau_gate, gate_corr, bparu, bpar_err] = int_sc(t, numer_g2, pt, tp,winc, file_list);
+    [tau_gate, gate_corr, bparu, bpar_err] = int_sc(t, numer_g2, pt, tp,winc, file_list, HOM);
 
     
     figure
@@ -82,6 +82,7 @@ end
 
 
 %Calculate g20
+
 num1=area_par0-bparu;
 den1=area_par-bparu;
 

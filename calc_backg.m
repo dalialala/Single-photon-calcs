@@ -36,7 +36,7 @@ pulse5=pulse5/nexp;
 %Background window start index
 if HOM == true
     if dt< 0.05
-        ib1=18
+        ib1=18;
     else
         ib1=1;
     end
@@ -50,7 +50,7 @@ end
 %Background window end index
 if HOM == true
     if dt<0.05
-        ib2=88
+        ib2=88;
     else
         ib2=34;
     end

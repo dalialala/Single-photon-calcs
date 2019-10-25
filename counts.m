@@ -29,7 +29,11 @@ tp_max = find(t1>=3.37,1);
 
 %Time pulse finishes in clock time
 %thp = find(t1>=3.47,1);
-thp =find(t1<=tp+t1gate,1, 'last');
+if dt>=0.05
+thp =find(t1<=tp+t1gate,1, 'last')+1;
+else
+ thp =find(t1<=tp+t1gate,1, 'last');
+end
 t1(thp)
 
 thp-tlp+1;
@@ -53,7 +57,7 @@ end
 
 if HOM == true
     if dt < 0.05
-        tb=-4.5785+dt;
+        tb=-(tp+t1gate)-dt;
     else
         tb=-(tp+t1gate)-dt;
     end
@@ -106,12 +110,12 @@ t1tgate_vec=sum(g3c(1:end,:),1);
 % hold
 % xlim([-10 10])
 
-[T1, Tau]=meshgrid(t, t1);
-figure
-surf(T1, Tau,g3c), view(2);
-shading interp
- xlim([-3, 3])
- ylim([1.5, 4.0])
- caxis([0 30])
- pbaspect([1 1 1])
+% [T1, Tau]=meshgrid(t, t1);
+% figure
+% surf(T1, Tau,g3c), view(2);
+% shading interp
+%  xlim([-7.5, 7.5])
+% ylim([1.5, 5.0])
+% caxis([0 5])
+ %pbaspect([1 1 1])
 end
